@@ -30,3 +30,4 @@ ROS2 Humble:
 https://docs.ros.org/en/humble/Installation.html
 ISAAC SIM 4.2.0:
 https://docs.omniverse.nvidia.com/isaacsim/latest/installation/index.html
+ISAAC SIM .usd file not available due to copywright
