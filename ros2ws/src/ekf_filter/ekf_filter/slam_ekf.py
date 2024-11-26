@@ -143,6 +143,7 @@ class SensorFusionNode(Node):
 
     # EKF Update Step for Robot State for IMU AND ENCODER
     def update_robot_state(self, z, R, H, z_pred):
+        
         z = z.reshape(-1, 1)
         z_pred = z_pred.reshape(-1, 1)
         y = z - z_pred
