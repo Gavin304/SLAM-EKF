@@ -24,6 +24,8 @@ setup(
             'ekf_filter= ekf_filter.ekf_filter:main',
             'comparison= ekf_filter.comparison:main',
             'slam_ekf= ekf_filter.slam_ekf:main',
+            'slam_map= ekf_filter.slam_map:main',
+            'pose_republisher= ekf_filter.pose_republisher:main',
         ],
     },
 )

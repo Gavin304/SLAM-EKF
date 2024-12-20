@@ -69,7 +69,7 @@ class Jacobian_Matrix:
         STATE VECTOR state_vector[x,y,theta,vx,vy,omega]T
         """
         #EXTRACT DATA FROM PARAMETER CONFIG
-        package_dir = get_package_share_directory('sensor_fusion')
+        package_dir = get_package_share_directory('ekf_filter')
         yaml_file_path = os.path.join(package_dir, 'config', 'ekf_config.yaml')
         with open(yaml_file_path, 'r') as file:
             config = yaml.safe_load(file)

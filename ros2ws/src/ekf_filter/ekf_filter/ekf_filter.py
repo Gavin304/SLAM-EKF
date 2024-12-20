@@ -20,7 +20,7 @@ from std_msgs.msg import Float32MultiArray
 
 class SensorFusionNode(Node):
     def __init__(self):
-        super().__init__('sensor_fusion_node')
+        super().__init__('ekf_filter_node')
         # SUBSCRIBE TO THE TOPICS
         self.imu_subscription = self.create_subscription(
             Imu,
@@ -126,11 +126,10 @@ class SensorFusionNode(Node):
             } 
         }
         # IMU measurement vector 
-        imu_noise = np.random.normal(0, 0.01, (3, 1))
         imu_measurement = np.array([
-            [self.imu_data['acceleration']['x'] + imu_noise[0, 0]], #ADDED NOISE IN THE SIMULATION SINCE THE SIMULATION DOES NOT HAVE NOISE
-            [self.imu_data['acceleration']['y'] + imu_noise[1, 0]], #ADDED NOISE 
-            [self.imu_data['angular_velocity']['z'] + imu_noise[2, 0]]  #ADDED NOISE 
+            self.imu_data['acceleration']['x'],
+            self.imu_data['acceleration']['y'], 
+            self.imu_data['angular_velocity']['z']
         ])
 
 

@@ -50,7 +50,7 @@ class SensorFusionNode(Node):
         #Add Publisher for Xnext
         self.state_publisher = self.create_publisher(
             Float32MultiArray,  
-            '/ekf_state',      
+            '/slam_ekf_state',      
             10                  
         )
         
@@ -180,7 +180,7 @@ class SensorFusionNode(Node):
         """
         Processes LiDAR data, clusters points, and updates SLAM EKF state.
         """
-
+        self.lidar_clusters = []
         # Parse LiDAR message
         ranges = np.array(msg.ranges)
         angles = np.linspace(msg.angle_min, msg.angle_max, len(ranges))
@@ -261,8 +261,49 @@ class SensorFusionNode(Node):
                 # Update `self.Prm` and `self.Pmr` matrices
                 self.Prm = self.P[:6, 6:]
                 self.Pmr = self.P[6:, :6]
-                
+        self.detect_loop_closure()
+         #DETECT LOOP CLOSURE       
+    def detect_loop_closure(self):
+        """
+        Detect if the robot has revisited a known landmark.
+        """
+        for landmark_id, (x, y) in self.landmarks.items():
+            if self.is_landmark_revisited(x, y):
+                self.correct_trajectory_and_map(landmark_id)
+                break
 
+    def is_landmark_revisited(self, x, y):
+        """
+        Check if the current observation matches a known landmark.
+        """
+        for center, radius in self.lidar_clusters:
+            x_global = self.state[0, 0] + center[0] * np.cos(self.state[2, 0])
+            y_global = self.state[1, 0] + center[1] * np.sin(self.state[2, 0])
+            delta = np.array([[x_global - x], [y_global - y]])
+            range_value = np.linalg.norm(delta)
+            if range_value < self.landmark_treshold:
+                return True
+        return False
+        
+    def correct_trajectory_and_map(self, landmark_id):
+        """
+        Correct the robot's trajectory and map based on the revisited landmark.
+        """
+        x, y = self.landmarks[landmark_id]
+        for center, radius in self.lidar_clusters:
+            x_global = self.state[0, 0] + center[0] * np.cos(self.state[2, 0])
+            y_global = self.state[1, 0] + center[1] * np.sin(self.state[2, 0])
+            delta = np.array([[x_global - x], [y_global - y]])
+            range_value = np.linalg.norm(delta)
+            if range_value < self.landmark_treshold:
+                z = np.array([[x_global], [y_global]])
+                z_pred = np.array([[x], [y]])
+                state_size = 6 + 2 * len(self.landmarks)
+                H = Jacobian_Landmark(delta, range_value, landmark_id, state_size).jacobian_landmark_function()
+                self.update_landmark_state(z, self.R_lidar, H, z_pred, [6 + 2 * landmark_id, 6 + 2 * landmark_id + 1])
+                break
+
+            
     # CALLBACK FUNCTION TO HANDLE ENCODER DATA
     def joint_states_callback(self, msg):
         self.joint_states_data = {
@@ -335,7 +376,7 @@ class SensorFusionNode(Node):
 
         # Publish the updated state
         state_msg = Float32MultiArray()
-        state_msg.data = self.state[:6].flatten().tolist()  # Flatten the state array and convert to a list
+        state_msg.data = self.state.flatten().tolist()  # Flatten the state array and convert to a list
 
         # Publish the state message
         self.state_publisher.publish(state_msg)

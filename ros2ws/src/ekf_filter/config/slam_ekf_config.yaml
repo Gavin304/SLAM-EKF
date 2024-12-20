@@ -3,12 +3,14 @@ length: 0.5
 width: 0.4
 wheel_radius: 0.1
 initial_state: [-2.15, -6.906, 0, 0, 0, 0]
-landmark_treshold: 0.2
-landmark_accuracy: 0.8
+
+#LANDMARK PARAMETERS
+landmark_treshold: 0.5
+landmark_accuracy: 0.2
 
 #DB SCAN PARAMETERS
-eps: 0.05
-min_samples: 5
+eps: 0.3
+min_samples: 3
 
 Q_states:
 - [0.05, 0, 0, 0, 0, 0]
@@ -36,6 +38,6 @@ R_encoder:
   - [0, 0, 0.0001]
 
 R_lidar:
-  - [0.01, 0]
-  - [0, 0.025]
+  - [0.1, 0]
+  - [0, 0.1 ]
 
